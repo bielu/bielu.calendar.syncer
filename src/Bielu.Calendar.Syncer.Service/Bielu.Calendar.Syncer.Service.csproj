@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <UserSecretsId>bielu-calendar-syncer</UserSecretsId>
+    <Description>Host process: runs the 15 minute sync worker and serves the local dashboard.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bielu.Calendar.Syncer\Bielu.Calendar.Syncer.csproj" />
+    <ProjectReference Include="..\Bielu.Calendar.Syncer.Google\Bielu.Calendar.Syncer.Google.csproj" />
+    <ProjectReference Include="..\Bielu.Calendar.Syncer.Microsoft\Bielu.Calendar.Syncer.Microsoft.csproj" />
+    <ProjectReference Include="..\Bielu.Calendar.Syncer.Dashboard\Bielu.Calendar.Syncer.Dashboard.csproj" />
+  </ItemGroup>
+
+</Project>

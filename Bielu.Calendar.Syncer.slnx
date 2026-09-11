@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Bielu.Calendar.Syncer.Dashboard/Bielu.Calendar.Syncer.Dashboard.csproj" />
+    <Project Path="src/Bielu.Calendar.Syncer.Google/Bielu.Calendar.Syncer.Google.csproj" />
+    <Project Path="src/Bielu.Calendar.Syncer.Microsoft/Bielu.Calendar.Syncer.Microsoft.csproj" />
+    <Project Path="src/Bielu.Calendar.Syncer.Service/Bielu.Calendar.Syncer.Service.csproj" />
+    <Project Path="src/Bielu.Calendar.Syncer/Bielu.Calendar.Syncer.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Bielu.Calendar.Syncer.Tests/Bielu.Calendar.Syncer.Tests.csproj" />
+  </Folder>
+</Solution>

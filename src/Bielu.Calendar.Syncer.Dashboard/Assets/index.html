@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bielu calendar syncer</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --border: #e2e5ea;
+    --text: #14161a;
+    --muted: #6b7280;
+    --accent: #2d6cdf;
+    --ok: #17803d;
+    --warn: #b45309;
+    --bad: #b91c1c;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1116;
+      --surface: #171b22;
+      --border: #272d38;
+      --text: #e6e9ef;
+      --muted: #9aa3b2;
+      --accent: #5b90f0;
+      --ok: #3fb950;
+      --warn: #d29922;
+      --bad: #f85149;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2rem 1.25rem 4rem;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 60rem; margin: 0 auto; }
+  header { display: flex; flex-wrap: wrap; gap: 1rem; align-items: baseline; justify-content: space-between; margin-bottom: 1.75rem; }
+  h1 { font-size: 1.35rem; margin: 0; letter-spacing: -0.01em; }
+  h2 { font-size: 1rem; margin: 0 0 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  section { margin-bottom: 2rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .stat { background: var(--surface); padding: 0.9rem 1rem; }
+  .stat .value { font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat .label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  button {
+    font: inherit; font-weight: 500; cursor: pointer; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    padding: 0.5rem 0.9rem;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  button:disabled { opacity: 0.5; cursor: default; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover:not(:disabled) { color: #fff; filter: brightness(1.08); }
+  button.danger:hover:not(:disabled) { border-color: var(--bad); color: var(--bad); }
+  .connect-row { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li.account { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid var(--border); }
+  li.account:last-child { border-bottom: 0; }
+  .account .who { flex: 1 1 14rem; min-width: 0; }
+  .account .mail { font-weight: 500; overflow-wrap: anywhere; }
+  .account .meta { font-size: 0.82rem; color: var(--muted); }
+  .badge { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.15rem 0.5rem; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+  .badge.on { color: var(--ok); border-color: currentColor; }
+  .badge.off { color: var(--warn); border-color: currentColor; }
+  .empty { color: var(--muted); }
+  .notice { border-radius: var(--radius); padding: 0.8rem 1rem; margin-bottom: 1.25rem; border: 1px solid currentColor; }
+  .notice.bad { color: var(--bad); }
+  .notice.ok { color: var(--ok); }
+  .notice.hint { color: var(--warn); }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 0.45rem 0.6rem 0.45rem 0; font-size: 0.88rem; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; }
+  tr:last-child td { border-bottom: 0; }
+  .scroll { overflow-x: auto; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>bielu calendar syncer</h1>
+    <div style="display:flex; gap:0.6rem; align-items:center;">
+      <span id="next-run" class="empty"></span>
+      <button id="sync-now" class="primary">Sync now</button>
+    </div>
+  </header>
+
+  <div id="notices"></div>
+
+  <section>
+    <h2>Last run</h2>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <section>
+    <h2>Connected calendars</h2>
+    <div class="card">
+      <ul id="accounts"></ul>
+      <div class="connect-row" id="connect" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Recent runs</h2>
+    <div class="card scroll">
+      <table>
+        <thead><tr><th>Finished</th><th>Created</th><th>Updated</th><th>Deleted</th><th>Took</th><th>Result</th></tr></thead>
+        <tbody id="history"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+const providerLabels = { google: "Google Calendar", microsoft: "Outlook / Microsoft 365" };
+const label = name => providerLabels[name] ?? name;
+
+const el = id => document.getElementById(id);
+const fmtTime = value => value ? new Date(value).toLocaleString() : "never";
+const fmtDuration = value => {
+  if (!value) return "-";
+  const [h, m, s] = value.split(":");
+  const total = (+h) * 3600 + (+m) * 60 + parseFloat(s);
+  return total < 1 ? `${Math.round(total * 1000)} ms` : `${total.toFixed(1)} s`;
+};
+
+function renderNotices(status) {
+  const params = new URLSearchParams(location.search);
+  const notices = [];
+
+  if (params.get("error")) {
+    notices.push(`<div class="notice bad">Sign-in failed: <code>${escapeHtml(params.get("error"))}</code></div>`);
+  }
+  if (params.get("connected")) {
+    notices.push(`<div class="notice ok">Calendar connected.</div>`);
+  }
+  for (const provider of status.providers.filter(p => !p.isConfigured)) {
+    notices.push(`<div class="notice hint">${escapeHtml(label(provider.name))} has no client id configured yet — see the README to set one up.</div>`);
+  }
+  for (const error of status.lastRun?.errors ?? []) {
+    notices.push(`<div class="notice bad">${escapeHtml(error)}</div>`);
+  }
+  el("notices").innerHTML = notices.join("");
+}
+
+function renderStats(status) {
+  const run = status.lastRun;
+  const cells = [
+    ["Last sync", run ? fmtTime(run.completedAt) : "never"],
+    ["Created", run?.created ?? 0],
+    ["Updated", run?.updated ?? 0],
+    ["Deleted", run?.deleted ?? 0],
+    ["Calendars", run?.accountsSynced ?? status.accounts.filter(a => a.enabled).length],
+  ];
+  el("stats").innerHTML = cells
+    .map(([label, value]) => `<div class="stat"><div class="value">${escapeHtml(String(value))}</div><div class="label">${escapeHtml(label)}</div></div>`)
+    .join("");
+
+  el("next-run").textContent = status.isRunning
+    ? "syncing…"
+    : status.nextRunAt ? `next run ${fmtTime(status.nextRunAt)}` : "";
+  el("sync-now").disabled = status.isRunning;
+}
+
+function renderAccounts(status) {
+  el("accounts").innerHTML = status.accounts.length === 0
+    ? `<li class="empty">No calendars connected yet. Connect at least two to start mirroring.</li>`
+    : status.accounts.map(account => `
+        <li class="account">
+          <div class="who">
+            <div class="mail">${escapeHtml(account.displayName)}</div>
+            <div class="meta">${escapeHtml(label(account.providerName))} · connected ${escapeHtml(fmtTime(account.connectedAt))}</div>
+          </div>
+          <span class="badge ${account.enabled ? "on" : "off"}">${account.enabled ? "syncing" : "paused"}</span>
+          <button data-toggle="${account.id}" data-enabled="${account.enabled}">${account.enabled ? "Pause" : "Resume"}</button>
+          <button class="danger" data-remove="${account.id}" data-name="${escapeHtml(account.displayName)}">Disconnect</button>
+        </li>`).join("");
+
+  el("connect").innerHTML = status.providers.map(provider => `
+    <button ${provider.isConfigured ? "" : "disabled"} data-connect="${escapeHtml(provider.name)}">
+      + Connect ${escapeHtml(label(provider.name))}
+    </button>`).join("");
+}
+
+function renderHistory(status) {
+  el("history").innerHTML = status.history.length === 0
+    ? `<tr><td colspan="6" class="empty">Nothing yet.</td></tr>`
+    : status.history.map(run => `
+        <tr>
+          <td>${escapeHtml(fmtTime(run.completedAt))}</td>
+          <td>${run.created}</td>
+          <td>${run.updated}</td>
+          <td>${run.deleted}</td>
+          <td>${escapeHtml(fmtDuration(run.duration))}</td>
+          <td style="color: var(--${run.succeeded ? "ok" : "bad"})">${run.succeeded ? "ok" : `${run.errors.length} error(s)`}</td>
+        </tr>`).join("");
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+async function refresh() {
+  const status = await (await fetch("/api/status")).json();
+  renderNotices(status);
+  renderStats(status);
+  renderAccounts(status);
+  renderHistory(status);
+}
+
+document.addEventListener("click", async event => {
+  const target = event.target.closest("button");
+  if (!target) return;
+
+  if (target.id === "sync-now") {
+    target.disabled = true;
+    await fetch("/api/sync", { method: "POST" });
+    await refresh();
+    return;
+  }
+  if (target.dataset.connect) {
+    location.href = `/api/connect/${encodeURIComponent(target.dataset.connect)}`;
+    return;
+  }
+  if (target.dataset.toggle) {
+    await fetch(`/api/accounts/${target.dataset.toggle}/enabled`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ enabled: target.dataset.enabled !== "true" }),
+    });
+    await refresh();
+    return;
+  }
+  if (target.dataset.remove) {
+    if (!confirm(`Disconnect ${target.dataset.name}? Events mirrored to and from it will be removed.`)) return;
+    target.disabled = true;
+    await fetch(`/api/accounts/${target.dataset.remove}`, { method: "DELETE" });
+    await refresh();
+  }
+});
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>
