@@ -1,0 +1,32 @@
+<Project>
+
+    <Import Project="../version.props" Condition="Exists('../version.props')"/>
+
+    <PropertyGroup>
+      <Title>$(MSBuildProjectName)</Title>
+      <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+      <AssemblyVersion>$(Version)</AssemblyVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Authors>bielu</Authors>
+        <PackageOutputPath>$(MSBuildProjectDirectory)/../../dist</PackageOutputPath>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/bielu/bielu.calendar.syncer</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://github.com/bielu/bielu.calendar.syncer</PackageProjectUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)../README.md" Pack="true" PackagePath="/" />
+    </ItemGroup>
+
+</Project>

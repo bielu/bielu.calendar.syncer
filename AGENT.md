@@ -28,16 +28,23 @@ them appears as a copy in all the others, staying in step as it is edited or del
 │   ├── Bielu.Calendar.Syncer.Google/     # Google Calendar provider
 │   ├── Bielu.Calendar.Syncer.Microsoft/  # Microsoft Graph (Outlook) provider
 │   ├── Bielu.Calendar.Syncer.Dashboard/  # Local web dashboard slice
-│   └── Bielu.Calendar.Syncer.Service/    # Host process (worker + dashboard)
-├── tests/
-│   └── Bielu.Calendar.Syncer.Tests/      # Mirroring-engine tests (loop prevention, deletion semantics)
+│   ├── Bielu.Calendar.Syncer.Service/    # Host process (worker + dashboard)
+│   ├── Bielu.Calendar.Syncer.Tests/      # Engine tests (loop prevention, deletion semantics)
+│   ├── Bielu.Calendar.Syncer.slnx        # Solution
+│   ├── Directory.Build.props
+│   ├── Directory.Packages.props
+│   └── nuget.config
 ├── AGENT.md
-├── Directory.Build.props
-├── Directory.Packages.props
 ├── LICENSE
 ├── README.md
 └── version.props
 ```
+
+**The solution, both `Directory.*.props`, `nuget.config` and the test project all live inside `src/` — not at
+the repository root.** Only `version.props` sits at the root, and `src/Directory.Build.props` imports it as
+`../version.props`. This is not cosmetic: the shared CI templates in `bielu/bielu.GithubActions.Templates` run
+MSBuild with `src` as the working directory, so a root-level solution is never found and the build fails with
+`MSB1003`. Match the layout of `bielu.microservices.orchestrator` and `bielu.staticcode.analyzers` exactly.
 
 ---
 
@@ -165,7 +172,7 @@ range from being mistaken for deletions — do not remove it. Both branches are 
 
 ### Tests
 
-`tests/Bielu.Calendar.Syncer.Tests` covers the mirroring engine against in-memory fakes — no network, no files.
+`src/Bielu.Calendar.Syncer.Tests` covers the mirroring engine against in-memory fakes — no network, no files.
 `FakeCalendarProvider` deliberately re-parses the mirror marker out of the event body on read, exactly as the
 real providers do; without that the loop-prevention tests would pass vacuously. Any change to the engine must
 keep `DoesNotMirrorAMirrorBackToItsOrigin` and `RepeatedRunsDoNotChurnUnchangedEvents` green.

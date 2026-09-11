@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Bielu.Calendar.Syncer\Bielu.Calendar.Syncer.csproj" />
+    <ProjectReference Include="..\Bielu.Calendar.Syncer\Bielu.Calendar.Syncer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

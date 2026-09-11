@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="Bielu.Calendar.Syncer.Dashboard/Bielu.Calendar.Syncer.Dashboard.csproj" />
+  <Project Path="Bielu.Calendar.Syncer.Google/Bielu.Calendar.Syncer.Google.csproj" />
+  <Project Path="Bielu.Calendar.Syncer.Microsoft/Bielu.Calendar.Syncer.Microsoft.csproj" />
+  <Project Path="Bielu.Calendar.Syncer.Service/Bielu.Calendar.Syncer.Service.csproj" />
+  <Project Path="Bielu.Calendar.Syncer.Tests/Bielu.Calendar.Syncer.Tests.csproj" />
+  <Project Path="Bielu.Calendar.Syncer/Bielu.Calendar.Syncer.csproj" />
+</Solution>
